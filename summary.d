@@ -58,8 +58,6 @@ import dstats.sort, dstats.base, dstats.alloc;
 version(unittest) {
     import std.stdio, dstats.random;
 
-    void main() {
-    }
 }
 
 /**Finds median of an input range in O(N) time on average.  In the case of an
@@ -113,6 +111,22 @@ if(isRandomAccessRange!(T) &&
     }
 }
 
+// FIXME: needed only for unittests
+// Make sure everything works with lowest common denominator range type.
+private struct Count {
+    uint num;
+    uint upTo;
+    @property size_t front() {
+        return num;
+    }
+    void popFront() {
+        num++;
+    }
+    @property bool empty() {
+        return num >= upTo;
+    }
+}
+
 unittest {
     float brainDeadMedian(float[] foo) {
         qsort(foo);
@@ -140,21 +154,6 @@ unittest {
         // Off by some tiny fraction in even N case because of division.
         // No idea why, but it's too small a rounding error to care about.
         assert(approxEqual(quickRes, accurateRes));
-    }
-
-    // Make sure everything works with lowest common denominator range type.
-    static struct Count {
-        uint num;
-        uint upTo;
-        @property size_t front() {
-            return num;
-        }
-        void popFront() {
-            num++;
-        }
-        @property bool empty() {
-            return num >= upTo;
-        }
     }
 
     Count a;

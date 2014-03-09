@@ -41,7 +41,6 @@ private static import dstats.infotheory;
 
 version(unittest) {
     import std.stdio, dstats.random;
-    void main(){}
 }
 
 /**Alternative hypotheses.  Exact meaning varies with test used.*/
@@ -1715,7 +1714,7 @@ unittest {
  * a second range.*/
 TestRes wilcoxonSignedRank(T)(T data, double mu, Alt alt = Alt.twoSided, uint exactThresh = 50)
 if(doubleInput!(T) && is(typeof(data.front - mu) : double)) {
-    return wilcoxonSignedRank(data, replicate(mu, data.length), alt, exactThresh);
+    return wilcoxonSignedRank(data, repeat(mu, data.length), alt, exactThresh);
 }
 
 unittest {

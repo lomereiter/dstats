@@ -82,9 +82,6 @@ import dstats.alloc;
 
 version(unittest) {
     import std.stdio, std.random;
-
-    void main (){
-    }
 }
 
 class SortException : Exception {

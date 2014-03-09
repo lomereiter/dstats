@@ -37,12 +37,6 @@ import dstats.sort, dstats.base, dstats.alloc, dstats.summary;
 
 version(unittest) {
     import std.stdio, dstats.random;
-
-    Random gen;
-
-    void main() {
-        gen.seed(unpredictableSeed);
-    }
 }
 
 /**Convenience function for calculating Pearson correlation.
@@ -133,25 +127,29 @@ if(doubleInput!(T) && doubleInput!(U)) {
     return corCalc;
 }
 
+
+// FIXME: moved this out of unittest{} block merely in order to satisfy linker.
+//
+// Make sure everything works with lowest common denominator range type.
+private static struct Count {
+    uint num;
+    uint upTo;
+    @property size_t front() {
+        return num;
+    }
+    void popFront() {
+        num++;
+    }
+    @property bool empty() {
+        return num >= upTo;
+    }
+}
+
 unittest {
     assert(approxEqual(pearsonCor([1,2,3,4,5][], [1,2,3,4,5][]).cor, 1));
     assert(approxEqual(pearsonCor([1,2,3,4,5][], [10.0, 8.0, 6.0, 4.0, 2.0][]).cor, -1));
     assert(approxEqual(pearsonCor([2, 4, 1, 6, 19][], [4, 5, 1, 3, 2][]).cor, -.2382314));
 
-        // Make sure everything works with lowest common denominator range type.
-    static struct Count {
-        uint num;
-        uint upTo;
-        @property size_t front() {
-            return num;
-        }
-        void popFront() {
-            num++;
-        }
-        @property bool empty() {
-            return num >= upTo;
-        }
-    }
 
     Count a, b;
     a.upTo = 100;
@@ -232,8 +230,7 @@ public:
         _mean2 += delta2N;
     }
 
-    /// Combine two PearsonCor's.
-    void put(const ref typeof(this) rhs) nothrow @safe {
+    void putImpl(const ref typeof(this) rhs) nothrow @safe {
         if(_k == 0) {
             foreach(ti, elem; rhs.tupleof) {
                 this.tupleof[ti] = elem;
@@ -254,6 +251,16 @@ public:
         _var2 = _var2 + rhs._var2 + (_k / totalN * rhs._k * delta2 * delta2 );
         _cov  =  _cov + rhs._cov  + (_k / totalN * rhs._k * delta1 * delta2 );
         _k = totalN;
+    }
+
+    /// Combine two PearsonCor's.
+    void put(const ref typeof(this) rhs) nothrow @safe {
+        putImpl(rhs);
+    }
+
+    /// ditto
+    void put(typeof(this) rhs) nothrow @safe {
+        putImpl(rhs);
     }
 
     const pure nothrow @property @safe {
@@ -400,21 +407,6 @@ unittest {
         assert(approxEqual(sTwo, sThree) || (isnan(sThree) && isnan(sTwo)));
         assert(approxEqual(sThree, sFour) || (isnan(sThree) && isnan(sFour)));
         assert(approxEqual(sFour, sFive) || (isnan(sFour) && isnan(sFive)));
-    }
-
-    // Test input ranges.
-    static struct Count {
-        uint num;
-        uint upTo;
-        @property size_t front() {
-            return num;
-        }
-        void popFront() {
-            num++;
-        }
-        @property bool empty() {
-            return num >= upTo;
-        }
     }
 
     Count a, b;
@@ -788,21 +780,6 @@ unittest {
     doKendallTest!int();
     doKendallTest!float();
     doKendallTest!double();
-
-    // Make sure everything works with lowest common denominator range type.
-    static struct Count {
-        uint num;
-        uint upTo;
-        @property size_t front() {
-            return num;
-        }
-        void popFront() {
-            num++;
-        }
-        @property bool empty() {
-            return num >= upTo;
-        }
-    }
 
     Count a, b;
     a.upTo = 100;

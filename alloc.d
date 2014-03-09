@@ -43,7 +43,6 @@ import dstats.base;
 
 version(unittest) {
     import std.stdio, std.conv, std.random, dstats.sort;
-    void main() {}
 }
 
 private template Appends(T, U) {
@@ -54,6 +53,14 @@ private template AppendsImpl(T, U) {
     T[] a;
     U b;
     enum bool ret = is(typeof(a ~= b));
+}
+
+private template nDimensions(T)
+{
+    static if(isArray!T)
+        enum nDimensions = 1 + nDimensions!(typeof(T.init[0]));
+    else
+        enum nDimensions = 0;
 }
 
 ///Appends to an array, deleting the old array if it has to be realloced.
@@ -1542,6 +1549,10 @@ struct StackTreeAA(K, V) {
     }
 
     private static ref Unqual!(V) getVal(ref Node node) {
+        return node.value;
+    }
+
+    private static Unqual!(V) getVal(Node node) {
         return node.value;
     }
 
